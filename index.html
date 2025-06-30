@@ -42,14 +42,20 @@
     <tbody id="inventory-body"></tbody>
   </table>
 
-  <!-- 🚀 Pro-Only Feature -->
+  <!-- ✅ Pro-only CSV export feature -->
+  <div id="csv-section" class="pro-feature" style="display: none;">
+    <h2>Export Inventory</h2>
+    <button onclick="exportCSV()">Download CSV</button>
+  </div>
+
+  <!-- 🔒 Pro-only summary report placeholder -->
   <div id="pro-feature-section" class="pro-feature" style="display:none;">
     <h2>Summary Report</h2>
     <p>This is a premium feature available to Pro users.</p>
     <button onclick="generateReport()">Generate Report</button>
   </div>
 
-  <!-- 🔐 Upgrade Prompt -->
+  <!-- 🔐 Pro Upgrade Form -->
   <div id="pro-upgrade">
     <h3>Upgrade to Riversdale Pro</h3>
     <p>Enter your license key to unlock premium features:</p>
@@ -58,7 +64,7 @@
   </div>
 
   <script>
-    // Example barcode database
+    // 📦 Sample item database for barcode lookup
     const itemDatabase = {
       "123456789012": { itemName: "Milk", price: 5.99 },
       "987654321098": { itemName: "Cheese", price: 12.50 }
@@ -66,6 +72,7 @@
 
     let inventory = [];
 
+    // 🧮 Table update logic
     function updateInventoryTable() {
       const body = document.getElementById('inventory-body');
       body.innerHTML = '';
@@ -85,6 +92,7 @@
       });
     }
 
+    // 🧠 Smart barcode auto-fill
     document.getElementById('barcode').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
@@ -102,6 +110,7 @@
       }
     });
 
+    // ➕ Add item
     document.getElementById('add-item-btn').addEventListener('click', (e) => {
       e.preventDefault();
       const itemName = document.getElementById('item-name').value;
@@ -112,7 +121,7 @@
       document.getElementById('add-item-form').reset();
     });
 
-    // 🔐 Licensing Logic
+    // 🔐 Licensing logic
     function unlockPro() {
       const key = document.getElementById('license-input').value;
       if (key === 'RIVERSDALE-PRO-2024') {
@@ -128,18 +137,44 @@
       return localStorage.getItem('riversdale_license') === 'RIVERSDALE-PRO-2024';
     }
 
-    // Show Pro content if unlocked
+    // 📤 Export CSV
+    function exportCSV() {
+      if (!isProUser()) {
+        alert("Exporting is only available to Pro users. Unlock to continue.");
+        return;
+      }
+      if (inventory.length === 0) {
+        alert("No inventory to export.");
+        return;
+      }
+
+      const headers = "Item Name,Quantity,Price\n";
+      const rows = inventory.map(item =>
+        `${item.itemName},${item.quantity},${item.price.toFixed(2)}`
+      ).join("\n");
+      const csvContent = headers + rows;
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", "riversdale-inventory.csv");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    // 📊 Placeholder summary feature
+    function generateReport() {
+      alert("Here's your summary report! 🧾 (Feature coming soon)");
+    }
+
+    // 🏁 On load, unlock any Pro tools
     window.onload = function () {
       if (isProUser()) {
+        document.getElementById('csv-section').style.display = 'block';
         document.getElementById('pro-feature-section').style.display = 'block';
       }
     };
-
-    // Example Pro-only feature
-    function generateReport() {
-      alert("Here's your summary report! 🧾");
-      // Add real report logic here
-    }
   </script>
 </body>
 </html>
