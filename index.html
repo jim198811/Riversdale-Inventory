@@ -3,17 +3,19 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Riversdale Dairy Inventory</title>
-<link rel="manifest" href="manifest.json" />
+  <title>Riversdale Inventory</title>
+  <link rel="manifest" href="manifest.json" />
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     label, input { display: block; margin-bottom: 10px; }
     table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .pro-feature { margin-top: 30px; padding: 15px; border: 1px dashed #ccc; }
+    #pro-upgrade { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; }
   </style>
 </head>
 <body>
-  <h1>Riversdale Dairy & Agri Inventory</h1>
+  <h1>Riversdale Inventory</h1>
 
   <form id="add-item-form">
     <label for="barcode">Scan Barcode:</label>
@@ -40,20 +42,53 @@
     <tbody id="inventory-body"></tbody>
   </table>
 
-  <script>
-    let inventory = [];
+  <!-- 🚀 Pro-Only Feature -->
+  <div id="pro-feature-section" class="pro-feature" style="display:none;">
+    <h2>Summary Report</h2>
+    <p>This is a premium feature available to Pro users.</p>
+    <button onclick="generateReport()">Generate Report</button>
+  </div>
 
+  <!-- 🔐 Upgrade Prompt -->
+  <div id="pro-upgrade">
+    <h3>Upgrade to Riversdale Pro</h3>
+    <p>Enter your license key to unlock premium features:</p>
+    <input type="text" id="license-input" placeholder="Enter license key" />
+    <button onclick="unlockPro()">Unlock</button>
+  </div>
+
+  <script>
+    // Example barcode database
     const itemDatabase = {
       "123456789012": { itemName: "Milk", price: 5.99 },
       "987654321098": { itemName: "Cheese", price: 12.50 }
     };
 
-    // Handle barcode scans
+    let inventory = [];
+
+    function updateInventoryTable() {
+      const body = document.getElementById('inventory-body');
+      body.innerHTML = '';
+      inventory.forEach((item, index) => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+          <td>${item.itemName}</td>
+          <td>${item.quantity}</td>
+          <td>$${item.price.toFixed(2)}</td>
+          <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+        `;
+        body.appendChild(row);
+        row.querySelector('.delete-btn').addEventListener('click', () => {
+          inventory.splice(index, 1);
+          updateInventoryTable();
+        });
+      });
+    }
+
     document.getElementById('barcode').addEventListener('keydown', function (e) {
       if (e.key === 'Enter') {
         e.preventDefault();
         const code = this.value.trim();
-
         if (itemDatabase[code]) {
           const item = itemDatabase[code];
           document.getElementById('item-name').value = item.itemName;
@@ -62,7 +97,6 @@
         } else {
           alert("Barcode not found in database.");
         }
-
         this.value = '';
         document.getElementById('item-name').focus();
       }
@@ -73,31 +107,38 @@
       const itemName = document.getElementById('item-name').value;
       const quantity = parseInt(document.getElementById('quantity').value);
       const price = parseFloat(document.getElementById('price').value);
-
       inventory.push({ itemName, quantity, price });
       updateInventoryTable();
       document.getElementById('add-item-form').reset();
     });
 
-    function updateInventoryTable() {
-      const body = document.getElementById('inventory-body');
-      body.innerHTML = '';
+    // 🔐 Licensing Logic
+    function unlockPro() {
+      const key = document.getElementById('license-input').value;
+      if (key === 'RIVERSDALE-PRO-2024') {
+        localStorage.setItem('riversdale_license', key);
+        alert('Pro unlocked! 🎉');
+        location.reload();
+      } else {
+        alert('Invalid license key.');
+      }
+    }
 
-      inventory.forEach((item, index) => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-          <td>${item.itemName}</td>
-          <td>${item.quantity}</td>
-          <td>$${item.price.toFixed(2)}</td>
-          <td><button class="delete-btn" data-index="${index}">Delete</button></td>
-        `;
-        body.appendChild(row);
+    function isProUser() {
+      return localStorage.getItem('riversdale_license') === 'RIVERSDALE-PRO-2024';
+    }
 
-        row.querySelector('.delete-btn').addEventListener('click', () => {
-          inventory.splice(index, 1);
-          updateInventoryTable();
-        });
-      });
+    // Show Pro content if unlocked
+    window.onload = function () {
+      if (isProUser()) {
+        document.getElementById('pro-feature-section').style.display = 'block';
+      }
+    };
+
+    // Example Pro-only feature
+    function generateReport() {
+      alert("Here's your summary report! 🧾");
+      // Add real report logic here
     }
   </script>
 </body>
