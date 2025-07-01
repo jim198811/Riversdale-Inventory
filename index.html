@@ -164,9 +164,34 @@
     }
 
     // 📊 Placeholder summary feature
-    function generateReport() {
-      alert("Here's your summary report! 🧾 (Feature coming soon)");
-    }
+  function generateReport() {
+  if (!isProUser()) {
+    alert("This feature requires a Pro license.");
+    return;
+  }
+
+  if (inventory.length === 0) {
+    alert("Your inventory is empty.");
+    return;
+  }
+
+  const totalItems = inventory.length;
+  const totalQuantity = inventory.reduce((sum, item) => sum + item.quantity, 0);
+  const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+  const highestItem = inventory.reduce((max, item) =>
+    item.price > max.price ? item : max, inventory[0]);
+
+  const summary = `
+    🧾 Inventory Summary:
+    - Total items: ${totalItems}
+    - Total quantity: ${totalQuantity}
+    - Total value: $${totalValue.toFixed(2)}
+    - Most expensive item: "${highestItem.itemName}" — $${highestItem.price.toFixed(2)}
+  `;
+  
+  alert(summary);
+}
+
 
     // 🏁 On load, unlock any Pro tools
     window.onload = function () {
