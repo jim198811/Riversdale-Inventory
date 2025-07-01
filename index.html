@@ -51,9 +51,9 @@
   <!-- 🔒 Pro-only summary report placeholder -->
   <div id="pro-feature-section" class="pro-feature" style="display:none;">
     <h2>Summary Report</h2>
-    <p>This is a premium feature available to Pro users.</p>
-    <button onclick="generateReport()">Generate Report</button>
-  </div>
+   <button onclick="generateReport()">Generate Report</button>
+<div id="summary-display" style="margin-top: 10px; white-space: pre-line;"></div>
+
 
   <!-- 🔐 Pro Upgrade Form -->
   <div id="pro-upgrade">
@@ -189,7 +189,8 @@
     - Most expensive item: "${highestItem.itemName}" — $${highestItem.price.toFixed(2)}
   `;
   
-  alert(summary);
+ document.getElementById("summary-display").textContent = summary;
+
 }
 
 
