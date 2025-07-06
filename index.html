@@ -37,9 +37,7 @@
   </style>
 </head>
 <body>
-
   <h1>Riversdale Inventory</h1>
-
   <form id="add-item-form">
     <label for="barcode">Scan Barcode:</label>
     <input type="text" id="barcode" autocomplete="off" />
@@ -79,7 +77,7 @@
 
   <!-- License Unlock -->
   <div id="pro-upgrade">
-    <h3>Upgrade to Riversdale Pro</h3>
+    <h3 id="pro-status-heading">Upgrade to Riversdale Pro</h3>
     <p>Enter your license key to unlock premium features:</p>
     <input type="text" id="license-input" placeholder="Enter license key" />
     <button onclick="unlockPro()">Unlock</button>
@@ -88,124 +86,125 @@
     </p>
   </div>
 
-  <script>
-    const itemDatabase = {
-      "123456789012": { itemName: "Milk", price: 5.99 },
-      "987654321098": { itemName: "Cheese", price: 12.5 }
-    };
+<script>
+  const itemDatabase = {
+    "123456789012": { itemName: "Milk", price: 5.99 },
+    "987654321098": { itemName: "Cheese", price: 12.5 }
+  };
 
-    let inventory = [];
+  let inventory = [];
 
-    function updateInventoryTable() {
-      const body = document.getElementById("inventory-body");
-      body.innerHTML = "";
-      inventory.forEach((item, index) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${item.itemName}</td>
-          <td>${item.quantity}</td>
-          <td>$${item.price.toFixed(2)}</td>
-          <td><button onclick="deleteItem(${index})">Delete</button></td>
-        `;
-        body.appendChild(row);
-      });
-    }
-
-    function deleteItem(index) {
-      inventory.splice(index, 1);
-      updateInventoryTable();
-    }
-
-    document.getElementById("barcode").addEventListener("keydown", function (e) {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        const code = this.value.trim();
-        if (itemDatabase[code]) {
-          const item = itemDatabase[code];
-          document.getElementById("item-name").value = item.itemName;
-          document.getElementById("price").value = item.price;
-          document.getElementById("quantity").value = 1;
-        } else {
-          alert("Barcode not found in database.");
-        }
-        this.value = "";
-        document.getElementById("item-name").focus();
-      }
+  function updateInventoryTable() {
+    const body = document.getElementById("inventory-body");
+    body.innerHTML = "";
+    inventory.forEach((item, index) => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${item.itemName}</td>
+        <td>${item.quantity}</td>
+        <td>$${item.price.toFixed(2)}</td>
+        <td><button onclick="deleteItem(${index})">Delete</button></td>
+      `;
+      body.appendChild(row);
     });
+  }
 
-    document.getElementById("add-item-btn").addEventListener("click", function (e) {
+  function deleteItem(index) {
+    inventory.splice(index, 1);
+    updateInventoryTable();
+  }
+
+  document.getElementById("barcode").addEventListener("keydown", function (e) {
+    if (e.key === "Enter") {
       e.preventDefault();
-      const name = document.getElementById("item-name").value;
-      const qty = parseInt(document.getElementById("quantity").value);
-      const price = parseFloat(document.getElementById("price").value);
-      inventory.push({ itemName: name, quantity: qty, price: price });
-      updateInventoryTable();
-      document.getElementById("add-item-form").reset();
-    });
-
-    function unlockPro() {
-      const enteredKey = document.getElementById("license-input").value.trim();
-      if (enteredKey === "RIVERSDALE-PRO-2024") {
-        localStorage.setItem("riversdale_license", "RIVERSDALE-PRO-2024");
-        alert("✅ Pro features unlocked!");
-        showProTools();
+      const code = this.value.trim();
+      if (itemDatabase[code]) {
+        const item = itemDatabase[code];
+        document.getElementById("item-name").value = item.itemName;
+        document.getElementById("price").value = item.price;
+        document.getElementById("quantity").value = 1;
       } else {
-        alert("❌ Invalid license key. Please try again.");
+        alert("Barcode not found in database.");
       }
+      this.value = "";
+      document.getElementById("item-name").focus();
     }
+  });
 
-    function isProUser() {
-      return localStorage.getItem("riversdale_license") === "RIVERSDALE-PRO-2024";
-    }
-
-    function showProTools() {
+  document.getElementById("add-item-btn").addEventListener("click", function (e) {
+    e.preventDefault();
+    const name = document.getElementById("item-name").value;
+    const qty = parseInt(document.getElementById("quantity").value);
+    const price = parseFloat(document.getElementById("price").value);
+    inventory.push({ itemName: name, quantity: qty, price: price });
+    updateInventoryTable();
+    document.getElementById("add-item-form").reset();
+    document.getElementById("barcode").focus();
+  });
+  function unlockPro() {
+    const enteredKey = document.getElementById("license-input").value.trim();
+    if (enteredKey === "RIVERSDALE-PRO-2024") {
+      localStorage.setItem("riversdale_license", "RIVERSDALE-PRO-2024");
       document.getElementById("csv-section").style.display = "block";
       document.getElementById("pro-feature-section").style.display = "block";
+      document.getElementById("pro-status-heading").textContent = "✅ Pro Activated";
+      document.getElementById("license-input").value = "";
+      alert("✅ Pro features unlocked!");
+    } else {
+      alert("❌ Invalid license key. Please try again.");
     }
+  }
 
-    function exportCSV() {
-      if (!isProUser()) return alert("This feature is for Pro users only.");
-      if (inventory.length === 0) return alert("No inventory to export.");
+  function isProUser() {
+    return localStorage.getItem("riversdale_license") === "RIVERSDALE-PRO-2024";
+  }
 
-      const headers = "Item Name,Quantity,Price\n";
-      const rows = inventory.map(item =>
-        `${item.itemName},${item.quantity},${item.price.toFixed(2)}`
-      ).join("\n");
-      const csvContent = headers + rows;
+  function exportCSV() {
+    if (!isProUser()) return alert("This feature is for Pro users only.");
+    if (inventory.length === 0) return alert("No inventory to export.");
 
-      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.setAttribute("href", URL.createObjectURL(blob));
-      link.setAttribute("download", "riversdale-inventory.csv");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }
+    const headers = "Item Name,Quantity,Price\n";
+    const rows = inventory.map(item =>
+      `${item.itemName},${item.quantity},${item.price.toFixed(2)}`
+    ).join("\n");
+    const csvContent = headers + rows;
 
-    function generateReport() {
-      if (!isProUser()) return alert("Pro required for this feature.");
-      if (inventory.length === 0) return alert("Inventory is empty.");
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.setAttribute("href", URL.createObjectURL(blob));
+    link.setAttribute("download", "riversdale-inventory.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
 
-      const totalItems = inventory.length;
-      const totalQty = inventory.reduce((sum, item) => sum + item.quantity, 0);
-      const totalVal = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-      const highestItem = inventory.reduce((max, item) => item.price > max.price ? item : max, inventory[0]);
+  function generateReport() {
+    if (!isProUser()) return alert("Pro required for this feature.");
+    if (inventory.length === 0) return alert("Inventory is empty.");
 
-      const summary = `📦 Inventory Summary:
+    const totalItems = inventory.length;
+    const totalQty = inventory.reduce((sum, item) => sum + item.quantity, 0);
+    const totalVal = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+    const highestItem = inventory.reduce((max, item) => item.price > max.price ? item : max, inventory[0]);
+
+    const summary = `📦 Inventory Summary:
 - Total Items: ${totalItems}
 - Total Quantity: ${totalQty}
 - Total Value: $${totalVal.toFixed(2)}
 - Most Expensive Item: "${highestItem.itemName}" – $${highestItem.price.toFixed(2)}`;
 
-      document.getElementById("summary-display").textContent = summary;
-    }
+    document.getElementById("summary-display").textContent = summary;
+  }
 
-    window.onload = function () {
-      if (isProUser()) {
-        showProTools();
-      }
-    };
-  </script>
+  window.onload = function () {
+    if (isProUser()) {
+      document.getElementById("csv-section").style.display = "block";
+      document.getElementById("pro-feature-section").style.display = "block";
+      document.getElementById("pro-status-heading").textContent = "✅ Pro Activated";
+    }
+    document.getElementById("barcode").focus();
+  };
+</script>
 
 </body>
 </html>
