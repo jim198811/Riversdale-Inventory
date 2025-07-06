@@ -6,15 +6,38 @@
   <title>Riversdale Inventory</title>
   <link rel="manifest" href="manifest.json" />
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    label, input { display: block; margin-bottom: 10px; }
-    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-    .pro-feature { margin-top: 30px; padding: 15px; border: 1px dashed #ccc; }
-    #pro-upgrade { margin-top: 40px; border-top: 2px solid #ddd; padding-top: 20px; }
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    label, input {
+      display: block;
+      margin-bottom: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: left;
+    }
+    .pro-feature {
+      margin-top: 30px;
+      padding: 15px;
+      border: 1px dashed #ccc;
+    }
+    #pro-upgrade {
+      margin-top: 40px;
+      border-top: 2px solid #ddd;
+      padding-top: 20px;
+    }
   </style>
 </head>
 <body>
+
   <h1>Riversdale Inventory</h1>
 
   <form id="add-item-form">
@@ -42,168 +65,147 @@
     <tbody id="inventory-body"></tbody>
   </table>
 
-  <!-- ✅ Pro-only CSV export feature -->
+  <!-- Pro-only features -->
   <div id="csv-section" class="pro-feature" style="display: none;">
     <h2>Export Inventory</h2>
     <button onclick="exportCSV()">Download CSV</button>
   </div>
 
-  <!-- 🔒 Pro-only summary report placeholder -->
-  <div id="pro-feature-section" class="pro-feature" style="display:none;">
+  <div id="pro-feature-section" class="pro-feature" style="display: none;">
     <h2>Summary Report</h2>
-   <button onclick="generateReport()">Generate Report</button>
-<div id="summary-display" style="margin-top: 10px; white-space: pre-line;"></div>
+    <button onclick="generateReport()">Generate Report</button>
+    <div id="summary-display" style="margin-top: 10px; white-space: pre-line;"></div>
+  </div>
 
-
-  <!-- 🔐 Pro Upgrade Form -->
+  <!-- License Unlock -->
   <div id="pro-upgrade">
     <h3>Upgrade to Riversdale Pro</h3>
     <p>Enter your license key to unlock premium features:</p>
     <input type="text" id="license-input" placeholder="Enter license key" />
     <button onclick="unlockPro()">Unlock</button>
+    <p style="margin-top:10px; font-size:0.9em;">
+      Don’t have a key? <a href="https://kareemdreams.gumroad.com/l/jeeaq" target="_blank">Get Riversdale Pro – $10</a>
+    </p>
   </div>
-<p style="margin-top:10px; font-size:0.9em;">
-  Don’t have a key? <a href="https://kareemdreams.gumroad.com/l/jeeaq" target="_blank">Get Riversdale Pro – $10</a>
-</p>
 
   <script>
-    // 📦 Sample item database for barcode lookup
     const itemDatabase = {
       "123456789012": { itemName: "Milk", price: 5.99 },
-      "987654321098": { itemName: "Cheese", price: 12.50 }
+      "987654321098": { itemName: "Cheese", price: 12.5 }
     };
 
     let inventory = [];
 
-    // 🧮 Table update logic
     function updateInventoryTable() {
-      const body = document.getElementById('inventory-body');
-      body.innerHTML = '';
+      const body = document.getElementById("inventory-body");
+      body.innerHTML = "";
       inventory.forEach((item, index) => {
-        const row = document.createElement('tr');
+        const row = document.createElement("tr");
         row.innerHTML = `
           <td>${item.itemName}</td>
           <td>${item.quantity}</td>
           <td>$${item.price.toFixed(2)}</td>
-          <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+          <td><button onclick="deleteItem(${index})">Delete</button></td>
         `;
         body.appendChild(row);
-        row.querySelector('.delete-btn').addEventListener('click', () => {
-          inventory.splice(index, 1);
-          updateInventoryTable();
-        });
       });
     }
 
-    // 🧠 Smart barcode auto-fill
-    document.getElementById('barcode').addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
+    function deleteItem(index) {
+      inventory.splice(index, 1);
+      updateInventoryTable();
+    }
+
+    document.getElementById("barcode").addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
         e.preventDefault();
         const code = this.value.trim();
         if (itemDatabase[code]) {
           const item = itemDatabase[code];
-          document.getElementById('item-name').value = item.itemName;
-          document.getElementById('price').value = item.price;
-          document.getElementById('quantity').value = 1;
+          document.getElementById("item-name").value = item.itemName;
+          document.getElementById("price").value = item.price;
+          document.getElementById("quantity").value = 1;
         } else {
           alert("Barcode not found in database.");
         }
-        this.value = '';
-        document.getElementById('item-name').focus();
+        this.value = "";
+        document.getElementById("item-name").focus();
       }
     });
 
-    // ➕ Add item
-    document.getElementById('add-item-btn').addEventListener('click', (e) => {
+    document.getElementById("add-item-btn").addEventListener("click", function (e) {
       e.preventDefault();
-      const itemName = document.getElementById('item-name').value;
-      const quantity = parseInt(document.getElementById('quantity').value);
-      const price = parseFloat(document.getElementById('price').value);
-      inventory.push({ itemName, quantity, price });
+      const name = document.getElementById("item-name").value;
+      const qty = parseInt(document.getElementById("quantity").value);
+      const price = parseFloat(document.getElementById("price").value);
+      inventory.push({ itemName: name, quantity: qty, price: price });
       updateInventoryTable();
-      document.getElementById('add-item-form').reset();
+      document.getElementById("add-item-form").reset();
     });
 
-    // 🔐 Licensing logic
     function unlockPro() {
-      const key = document.getElementById('license-input').value;
-      if (key === 'RIVERSDALE-PRO-2024') {
-        localStorage.setItem('riversdale_license', key);
-        alert('Pro unlocked! 🎉');
-        location.reload();
+      const enteredKey = document.getElementById("license-input").value.trim();
+      if (enteredKey === "RIVERSDALE-PRO-2024") {
+        localStorage.setItem("riversdale_license", "RIVERSDALE-PRO-2024");
+        alert("✅ Pro features unlocked!");
+        showProTools();
       } else {
-        alert('Invalid license key.');
+        alert("❌ Invalid license key. Please try again.");
       }
     }
 
     function isProUser() {
-      return localStorage.getItem('riversdale_license') === 'RIVERSDALE-PRO-2024';
+      return localStorage.getItem("riversdale_license") === "RIVERSDALE-PRO-2024";
     }
 
-    // 📤 Export CSV
+    function showProTools() {
+      document.getElementById("csv-section").style.display = "block";
+      document.getElementById("pro-feature-section").style.display = "block";
+    }
+
     function exportCSV() {
-      if (!isProUser()) {
-        alert("Exporting is only available to Pro users. Unlock to continue.");
-        return;
-      }
-      if (inventory.length === 0) {
-        alert("No inventory to export.");
-        return;
-      }
+      if (!isProUser()) return alert("This feature is for Pro users only.");
+      if (inventory.length === 0) return alert("No inventory to export.");
 
       const headers = "Item Name,Quantity,Price\n";
       const rows = inventory.map(item =>
         `${item.itemName},${item.quantity},${item.price.toFixed(2)}`
       ).join("\n");
       const csvContent = headers + rows;
+
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      link.setAttribute("href", url);
+      link.setAttribute("href", URL.createObjectURL(blob));
       link.setAttribute("download", "riversdale-inventory.csv");
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    // 📊 Placeholder summary feature
-  function generateReport() {
-  if (!isProUser()) {
-    alert("This feature requires a Pro license.");
-    return;
-  }
+    function generateReport() {
+      if (!isProUser()) return alert("Pro required for this feature.");
+      if (inventory.length === 0) return alert("Inventory is empty.");
 
-  if (inventory.length === 0) {
-    alert("Your inventory is empty.");
-    return;
-  }
+      const totalItems = inventory.length;
+      const totalQty = inventory.reduce((sum, item) => sum + item.quantity, 0);
+      const totalVal = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+      const highestItem = inventory.reduce((max, item) => item.price > max.price ? item : max, inventory[0]);
 
-  const totalItems = inventory.length;
-  const totalQuantity = inventory.reduce((sum, item) => sum + item.quantity, 0);
-  const totalValue = inventory.reduce((sum, item) => sum + (item.quantity * item.price), 0);
-  const highestItem = inventory.reduce((max, item) =>
-    item.price > max.price ? item : max, inventory[0]);
+      const summary = `📦 Inventory Summary:
+- Total Items: ${totalItems}
+- Total Quantity: ${totalQty}
+- Total Value: $${totalVal.toFixed(2)}
+- Most Expensive Item: "${highestItem.itemName}" – $${highestItem.price.toFixed(2)}`;
 
-  const summary = `
-    🧾 Inventory Summary:
-    - Total items: ${totalItems}
-    - Total quantity: ${totalQuantity}
-    - Total value: $${totalValue.toFixed(2)}
-    - Most expensive item: "${highestItem.itemName}" — $${highestItem.price.toFixed(2)}
-  `;
-  
- document.getElementById("summary-display").textContent = summary;
+      document.getElementById("summary-display").textContent = summary;
+    }
 
-}
-
-
-    // 🏁 On load, unlock any Pro tools
     window.onload = function () {
       if (isProUser()) {
-        document.getElementById('csv-section').style.display = 'block';
-        document.getElementById('pro-feature-section').style.display = 'block';
+        showProTools();
       }
     };
   </script>
+
 </body>
 </html>
